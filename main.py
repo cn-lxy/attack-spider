@@ -139,7 +139,7 @@ def parse_technique_description_html(html, mitigation: bool = False):
     tactics_a = soup.find("div", id="card-tactics").find_all("a")
     tactics = []
     for a in tactics_a:
-        tactics.append(a.text.strip())
+        tactics.append({"id": a["href"].replace("/tactics/", "").strip(), "name": a.text.strip()})
     data["tactics"] = tactics
     # 3. 子技术
     subs = []
@@ -238,14 +238,101 @@ def parse_technique_description_html(html, mitigation: bool = False):
 
 def parse_sub_technique_description_html(html, mitigation: bool = False):
     soup = BeautifulSoup(html, "html.parser")
-    # 描述
+    data = {}
+    # 1. name
+    names = soup.find("div", class_="container-fluid").find("h1").text.split(":")
+    data["name"] = names[1].strip()
+    # 2. 技术
+    data["technique"] = names[0].strip()
+    # 3. 阶段 tactics
+    tactics_a = soup.find("div", id="card-tactics").find_all("a")
+    tactics = []
+    for a in tactics_a:
+        tactics.append({"id": a["href"].replace("/tactics/", "").strip(), "name": a.text.strip()})
+    data["tactics"] = tactics
+    # 4. version
+    maybes = soup.find_all("div", class_="card-body")[1].find_all("div", class_="card-data")
+    for maybe in maybes:
+        text = maybe.text
+        if "Version" in text:
+            data["version"] = text.split(":")[1].strip()
+            break
+    # 5.描述
     description_body = soup.find("div", class_="description-body")
-    ps = description_body.find_all("p")
-    sub_technique_description_list = []
-    for p in ps:
-        sub_technique_description_list.append({ "type": "text", "content": re.sub(r"\[\d+\]", "", p.text.strip()) })
-    
-    return sub_technique_description_list
+    children = description_body.children
+    technique_description_list = []
+    for child in children:
+        if child.name == "p":
+            item_list = []
+            p_content = ""
+            p_type = "" # "code" | "text"
+            for item in child:
+                if isinstance(item, str):
+                    p_type = "text"
+                    p_content += item
+                elif item.name == "code":
+                    if p_type == "text":
+                        item_list.append({ "type": "text", "content": p_content })
+                    p_type = "code"
+                    p_content = ""
+                    item_list.append({ "type": "code", "content": item.text })
+                else:
+                    p_type = "text"
+                    p_content += re.sub(r"\[\d+\]", "", item.text ).strip()
+            if p_type == "text" and p_content != "":
+                item_list.append({ "type": "text", "content": p_content })
+            technique_description_list.append(item_list)
+        elif child.name == "ul":
+            lis = child.find_all("li")
+            item_list = []
+            for li in lis:
+                item_list.append({ "type": "li", "content": re.sub(r"\[\d+\]", "", li.text ).strip() })
+            technique_description_list.append(item_list)
+    data["description"] = technique_description_list
+
+    # 6. 缓解措施
+    if mitigation:
+        mitigations = []
+        mitigation_tag = soup.find("h2", id="mitigations").find_next_siblings()[0]
+        if mitigation_tag.name == "div":
+            mitigation_trs = mitigation_tag.find("tbody").find_all("tr")
+            for tr in mitigation_trs:
+                tds = tr.find_all("td")
+                if len(tds) == 3:
+                    description = []
+                    for p in tds[2]:
+                        item_list = []
+                        p_content = ""
+                        p_type = "" # "code" | "text"
+                        for item in p:
+                            if isinstance(item, str):
+                                p_type = "text"
+                                p_content += re.sub(r"\n", "", item)
+                            elif item.name == "code":
+                                if p_type == "text":
+                                    item_list.append({ "type": "text", "content": p_content })
+                                p_type = "code"
+                                p_content = ""
+                                item_list.append({ "type": "code", "content": item.text })
+                            else:
+                                p_type = "text"
+                                pre1 = re.sub(r"\[\d+\]", "", item.text )
+                                pre2 = re.sub(r"\n", "", pre1)
+                                p_content += pre2
+                        if p_type == "text" and p_content != "":
+                            item_list.append({ "type": "text", "content": p_content })
+                        if len(item_list):
+                            description.append(item_list)
+                    mitigations.append({ 
+                        "id": tds[0].text.strip(), 
+                        "name": tds[1].text.strip(), 
+                        "description": description
+                    })
+        elif mitigation_tag.name == "p":
+            mitigations.append({ "type": "text", "content": re.sub(r"\s+", ' ', mitigation_tag.text.strip()) })
+        data["mitigations"] = mitigations
+
+    return data
 
 
 #! 调用1: 获取ATT&CK框架
@@ -353,8 +440,19 @@ def get_sub_technique_description(sub_technique_ids: list, mitigation: bool = Fa
         console_msg = f"子技术详情抓取中: {url} [{index+1:>3}/{list_len}]"
         print(console_msg, end='\r')
         sub_technique_html = request_html(url)
-        sub_technique_description = parse_sub_technique_description_html(sub_technique_html)
-        data.append({ "id": sub_technique_id, "description": sub_technique_description })
+        sub_technique_description = parse_sub_technique_description_html(sub_technique_html, mitigation)
+        if mitigation:
+            data.append({
+                "id": sub_technique_id,
+                "name": sub_technique_description["name"],
+                "tactics": sub_technique_description["tactics"],
+                "technique": sub_technique_description["technique"],
+                "version": sub_technique_description["version"],
+                "description": sub_technique_description["description"],
+                "mitigations": sub_technique_description["mitigations"],
+            })
+        else:
+            data.append({ "id": sub_technique_id, "description": sub_technique_description })
     print(console_msg)
     print("`%d` 个技术, 抓取完成!" % (list_len))
     if save:
@@ -374,4 +472,6 @@ if __name__ == "__main__":
     # technique_ids = ["T1556", "T1608", "T1137", "T1547", "T1574"]
     technique_ids = ["T1608"]
     get_technique_description(technique_ids, mitigation=True, save=True, translate=False)
-    # get_sub_technique_description(sub_technique_ids, mitigation=True, save=True, translate=True)
+    
+    sub_technique_ids = ["T1608.001"]
+    get_sub_technique_description(sub_technique_ids, mitigation=True, save=True, translate=False)

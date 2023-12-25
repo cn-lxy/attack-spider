@@ -2,7 +2,7 @@
   {
     "id": "T1608",
     "name": "Stage Capabilities",
-    "tactics": ["Resource Development"],
+    "tactics": [{ "id": "TA0042", "name": "Resource Development" }],
     "subs": [
       { "id": "T1608.001", "name": "Upload Malware" },
       { "id": "T1608.002", "name": "Upload Tool" },

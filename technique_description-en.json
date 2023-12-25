@@ -58,5 +58,129 @@
         ]
       }
     ]
+  },
+  {
+    "id": "T1558",
+    "name": "Steal or Forge Kerberos Tickets",
+    "tactics": [{ "id": "TA0006", "name": "Credential Access" }],
+    "subs": [
+      { "id": "T1558.001", "name": "Golden Ticket" },
+      { "id": "T1558.002", "name": "Silver Ticket" },
+      { "id": "T1558.003", "name": "Kerberoasting" },
+      { "id": "T1558.004", "name": "AS-REP Roasting" }
+    ],
+    "version": "1.4",
+    "description": [
+      [
+        {
+          "type": "text",
+          "content": "Adversaries may attempt to subvert Kerberos authentication by stealing or forging Kerberos tickets to enable Pass the Ticket. Kerberos is an authentication protocol widely used in modern Windows domain environments. In Kerberos environments, referred to as \"realms\", there are three basic participants: client, service, and Key Distribution Center (KDC). Clients request access to a service and through the exchange of Kerberos tickets, originating from KDC, they are granted access after having successfully authenticated. The KDC is responsible for both authentication and ticket granting.  Adversaries may attempt to abuse Kerberos by stealing tickets or forging tickets to enable unauthorized access."
+        }
+      ],
+      [
+        { "type": "text", "content": "On Windows, the built-in " },
+        { "type": "code", "content": "klist" },
+        {
+          "type": "text",
+          "content": " utility can be used to list and analyze cached Kerberos tickets."
+        }
+      ],
+      [
+        {
+          "type": "text",
+          "content": "Linux systems on Active Directory domains store Kerberos credentials locally in the credential cache file referred to as the \"ccache\". The credentials are stored in the ccache file while they remain valid and generally while a user's session lasts. On modern Redhat Enterprise Linux systems, and derivative distributions, the System Security Services Daemon (SSSD) handles Kerberos tickets. By default SSSD maintains a copy of the ticket database that can be found in "
+        },
+        { "type": "code", "content": "/var/lib/sss/secrets/secrets.ldb" },
+        {
+          "type": "text",
+          "content": " as well as the corresponding key located in "
+        },
+        { "type": "code", "content": "/var/lib/sss/secrets/.secrets.mkey" },
+        {
+          "type": "text",
+          "content": ". Both files require root access to read. If an adversary is able to access the database and key, the credential cache Kerberos blob can be extracted and converted into a usable Kerberos ccache file that adversaries may use for Pass the Ticket. The ccache file may also be converted into a Windows format using tools such as Kekeo."
+        }
+      ],
+      [
+        {
+          "type": "text",
+          "content": "Kerberos tickets on macOS are stored in a standard ccache format, similar to Linux. By default, access to these ccache entries is federated through the KCM daemon process via the Mach RPC protocol, which uses the caller's environment to determine access. The storage location for these ccache entries is influenced by the "
+        },
+        { "type": "code", "content": "/etc/krb5.conf" },
+        { "type": "text", "content": " configuration file and the " },
+        { "type": "code", "content": "KRB5CCNAME" },
+        {
+          "type": "text",
+          "content": " environment variable which can specify to save them to disk or keep them protected via the KCM daemon. Users can interact with ticket storage using "
+        },
+        { "type": "code", "content": "kinit" },
+        { "type": "text", "content": ", " },
+        { "type": "code", "content": "klist" },
+        { "type": "text", "content": ", " },
+        { "type": "code", "content": "ktutil" },
+        { "type": "text", "content": ", and " },
+        { "type": "code", "content": "kcc" },
+        {
+          "type": "text",
+          "content": " built-in binaries or via Apple's native Kerberos framework. Adversaries can use open source tools to interact with the ccache files directly or to use the Kerberos framework to call lower-level APIs for extracting the user's TGT or Service Tickets."
+        }
+      ]
+    ],
+    "mitigations": [
+      {
+        "id": "M1015",
+        "name": "Active Directory Configuration",
+        "description": [
+          [
+            {
+              "type": "text",
+              "content": "For containing the impact of a previously generated golden ticket, reset the built-in KRBTGT account password twice, which will invalidate any existing golden tickets that have been created with the KRBTGT hash and other Kerberos tickets derived from it. For each domain, change the KRBTGT account password once, force replication, and then change the password a second time. Consider rotating the KRBTGT account password every 180 days."
+            }
+          ]
+        ]
+      },
+      {
+        "id": "M1041",
+        "name": "Encrypt Sensitive Information",
+        "description": [
+          [
+            {
+              "type": "text",
+              "content": "Enable AES Kerberos encryption (or another stronger encryption algorithm), rather than RC4, where possible."
+            }
+          ]
+        ]
+      },
+      {
+        "id": "M1027",
+        "name": "Password Policies",
+        "description": [
+          [
+            {
+              "type": "text",
+              "content": "Ensure strong password length (ideally 25+ characters) and complexity for service accounts and that these passwords periodically expire. Also consider using Group Managed Service Accounts or another third party product such as password vaulting."
+            }
+          ]
+        ]
+      },
+      {
+        "id": "M1026",
+        "name": "Privileged Account Management",
+        "description": [
+          [
+            {
+              "type": "text",
+              "content": "Limit domain admin account permissions to domain controllers and limited servers. Delegate other admin functions to separate accounts."
+            }
+          ],
+          [
+            {
+              "type": "text",
+              "content": "Limit service accounts to minimal required privileges, including membership in privileged groups such as Domain Administrators."
+            }
+          ]
+        ]
+      }
+    ]
   }
 ]

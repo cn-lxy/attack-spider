@@ -465,12 +465,12 @@ def get_sub_technique_description(sub_technique_ids: list, mitigation: bool = Fa
 
 
 if __name__ == "__main__":
-    (tactic_ids, technique_ids, sub_technique_ids) = get_attack_framwork(translate=False, save=True)
-    print("阶段: `%d` 个, 技术: `%d` 个, 子技术: `%d` 个" % (len(tactic_ids), len(technique_ids), len(sub_technique_ids)))
+    # (tactic_ids, technique_ids, sub_technique_ids) = get_attack_framwork(translate=False, save=True)
+    # print("阶段: `%d` 个, 技术: `%d` 个, 子技术: `%d` 个" % (len(tactic_ids), len(technique_ids), len(sub_technique_ids)))
     # get_tactic_description(tactic_ids, save=True, translate=True)
     
     # technique_ids = ["T1556", "T1608", "T1137", "T1547", "T1574"]
-    # technique_ids = ["T1608"]
+    technique_ids = ["T1608", "T1558"]
     get_technique_description(technique_ids, mitigation=True, save=True, translate=False)
     
     # sub_technique_ids = ["T1608.001"]

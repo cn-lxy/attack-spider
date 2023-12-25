@@ -1,125 +1,266 @@
 [
   {
-    "id": "T1556",
-    "description": [
+    "id": "T1608",
+    "name": "Stage Capabilities",
+    "tactics": [
       {
-        "type": "text",
-        "content": "对手可以修改身份验证机制和流程以访问用户凭据或启用原本无理的对帐户的访问。身份验证过程由机制来处理，例如本地安全身份验证服务器（LSASS）流程和Windows上的安全帐户经理（SAM），基于UNIX的系统上的可插入身份验证模块（PAM）以及MACOS系统上的授权插件，负责任的插件用于收集，存储和验证凭据。通过修改身份验证过程，对手可以在不使用有效帐户的情况下对服务或系统进行身份验证。"
+        "id": "TA0042",
+        "name": "Resource Development"
+      }
+    ],
+    "subs": [
+      {
+        "id": "T1608.001",
+        "name": "Upload Malware"
       },
       {
-        "type": "text",
-        "content": "对手可能会恶意修改此过程的一部分，以揭示凭证或绕过身份验证机制。受损的凭据或访问可用于绕过网络中系统上各种资源上的访问控件，甚至可以用于持续访问远程系统和外部可用服务，例如VPN，Outlook Web访问和远程桌面。"
+        "id": "T1608.002",
+        "name": "Upload Tool"
+      },
+      {
+        "id": "T1608.003",
+        "name": "Install Digital Certificate"
+      },
+      {
+        "id": "T1608.004",
+        "name": "Drive-by Target"
+      },
+      {
+        "id": "T1608.005",
+        "name": "Link Target"
+      },
+      {
+        "id": "T1608.006",
+        "name": "SEO Poisoning"
       }
+    ],
+    "version": "1.2",
+    "description": [
+      [
+        {
+          "type": "text",
+          "content": "敌人可以上传、安装或以其他方式设置可在瞄准过程中使用的功能。为了支持他们的行动，对手可能需要获得他们开发的（发展能力）或获得的（获得能力）能力，并将其部署在他们控制的基础设施上。这些能力可以在对手之前购买/租用的基础设施上进行部署（获取基础设施），或者在其他方面受到对手的损害（损害基础设施）。功能也可以在web服务上部署，如GitHub或Pastebin，或在平台即服务（PaaS）产品上部署，使用户可以轻松地配置应用程序。"
+        }
+      ],
+      [
+        {
+          "type": "text",
+          "content": "能力的分级可以帮助对手进行一些初始访问和妥协后的行为，包括（但不限于）："
+        }
+      ],
+      [
+        {
+          "type": "list",
+          "content": "当用户浏览到某个网站时，暂存执行“按妥协驱动”所需的web资源。"
+        },
+        {
+          "type": "list",
+          "content": "正在暂存链接目标的web资源，以便与鱼叉式网络钓鱼一起使用。"
+        },
+        {
+          "type": "list",
+          "content": "将恶意软件或工具上传到受害者网络可访问的位置，以启用Ingress Tool Transfer。"
+        },
+        {
+          "type": "list",
+          "content": "安装以前获取的SSL/TLS证书以用于加密命令和控制流量（例如：使用Web协议的不对称加密）。"
+        }
+      ]
     ],
     "mitigations": [
       {
-        "id": "M1047",
-        "name": "Audit",
+        "id": "M1056",
+        "name": "Pre-compromise",
         "description": [
-          {
-            "type": "text",
-            "content": "Review authentication logs to ensure that mechanisms such as enforcement of MFA are functioning as intended."
-          },
-          {
-            "type": "text",
-            "content": "Periodically review the hybrid identity solution in use for any discrepancies. For example, review all Pass Through Authentication (PTA) agents in the Azure Management Portal to identify any unwanted or unapproved ones. If ADFS is in use, review DLLs and executable files in the AD FS and Global Assembly Cache directories to ensure that they are signed by Microsoft. Note that in some cases binaries may be catalog-signed, which may cause the file to appear unsigned when viewing file properties."
-          },
-          {
-            "type": "html",
-            "content": "<p>Periodically review for new and unknown network provider DLLs within the Registry (<code>HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\&lt;NetworkProviderName&gt;\\NetworkProvider\\ProviderPath</code>). Ensure only valid network provider DLLs are registered. The name of these can be found in the Registry key at <code>HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\NetworkProvider\\Order</code>, and have corresponding service subkey pointing to a DLL at <code>HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentC ontrolSet\\Services\\&lt;NetworkProviderName&gt;\\NetworkProvider</code>.</p>"
-          }
+          [
+            {
+              "type": "text",
+              "content": "This technique cannot be easily mitigated with preventive controls since it is based on behaviors performed outside of the scope of enterprise defenses and controls."
+            }
+          ]
+        ]
+      }
+    ]
+  },
+  {
+    "id": "T1558",
+    "name": "Steal or Forge Kerberos Tickets",
+    "tactics": [
+      {
+        "id": "TA0006",
+        "name": "Credential Access"
+      }
+    ],
+    "subs": [
+      {
+        "id": "T1558.001",
+        "name": "Golden Ticket"
+      },
+      {
+        "id": "T1558.002",
+        "name": "Silver Ticket"
+      },
+      {
+        "id": "T1558.003",
+        "name": "Kerberoasting"
+      },
+      {
+        "id": "T1558.004",
+        "name": "AS-REP Roasting"
+      }
+    ],
+    "version": "1.4",
+    "description": [
+      [
+        {
+          "type": "text",
+          "content": "对手可能试图通过窃取或伪造Kerberos票证来破坏Kerberos身份验证，从而启用“通过票证”。Kerberos是一种在现代Windows域环境中广泛使用的身份验证协议。在Kerberos环境（称为“领域”）中，有三个基本参与者：客户端、服务和密钥分发中心（KDC）。客户端请求访问服务，并通过交换源自KDC的Kerberos票证，在成功进行身份验证后授予访问权限。KDC负责身份验证和票证授予。对手可能试图通过窃取票证或伪造票证来滥用Kerberos，以实现未经授权的访问。"
+        }
+      ],
+      [
+        {
+          "type": "text",
+          "content": "在Windows上，内置的"
+        },
+        {
+          "type": "code",
+          "content": "klist"
+        },
+        {
+          "type": "text",
+          "content": "实用程序可用于列出和分析缓存的Kerberos票证。"
+        }
+      ],
+      [
+        {
+          "type": "text",
+          "content": "Active Directory域上的Linux系统将Kerberos凭据本地存储在称为“ccache”的凭据缓存文件中。凭据存储在ccache文件中，同时它们保持有效，通常在用户会话持续期间。在现代Redhat Enterprise Linux系统和衍生发行版上，系统安全服务守护程序（SSSD）处理Kerberos票证。默认情况下，SSSD维护可在"
+        },
+        {
+          "type": "code",
+          "content": "/var/lib/sss/ssecrets/secrets.ldb"
+        },
+        {
+          "type": "text",
+          "content": "中找到的票证数据库的副本，以及位于"
+        },
+        {
+          "type": "code",
+          "content": "/var/lib/sss/ssecrets/.ssecrets.mkey"
+        },
+        {
+          "type": "text",
+          "content": "的相应密钥。这两个文件都需要root访问权限才能读取。如果对手能够访问数据库和密钥，则可以提取凭证缓存Kerberos blob，并将其转换为可用的Kerberos ccache文件，对手可以使用该文件来传递票证。ccache文件也可以使用Kekeo等工具转换为Windows格式。"
+        }
+      ],
+      [
+        {
+          "type": "text",
+          "content": "macOS上的Kerberos票证以类似于Linux的标准ccache格式存储。默认情况下，对这些ccache条目的访问是通过马赫RPC协议通过KCM守护进程进行联合的，该协议使用调用方的环境来确定访问。这些ccache条目的存储位置受"
+        },
+        {
+          "type": "code",
+          "content": "/etc/krb5.conf"
+        },
+        {
+          "type": "text",
+          "content": "配置文件和"
+        },
+        {
+          "type": "code",
+          "content": "KRB5CCNAME"
+        },
+        {
+          "type": "text",
+          "content": "环境变量的影响，后者可以指定将它们保存到磁盘或通过KCM守护进程保护它们。用户可以使用"
+        },
+        {
+          "type": "code",
+          "content": "kinit"
+        },
+        {
+          "type": "text",
+          "content": "、"
+        },
+        {
+          "type": "code",
+          "content": "klist"
+        },
+        {
+          "type": "text",
+          "content": "，"
+        },
+        {
+          "type": "code",
+          "content": "ktutil"
+        },
+        {
+          "type": "text",
+          "content": "和"
+        },
+        {
+          "type": "code",
+          "content": "kcc"
+        },
+        {
+          "type": "text",
+          "content": "内置二进制文件或通过苹果的本地Kerberos框架与票证存储交互。对手可以使用开源工具直接与ccache文件交互，也可以使用Kerberos框架调用较低级别的API来提取用户的TGT或服务票证。"
+        }
+      ]
+    ],
+    "mitigations": [
+      {
+        "id": "M1015",
+        "name": "Active Directory Configuration",
+        "description": [
+          [
+            {
+              "type": "text",
+              "content": "For containing the impact of a previously generated golden ticket, reset the built-in KRBTGT account password twice, which will invalidate any existing golden tickets that have been created with the KRBTGT hash and other Kerberos tickets derived from it. For each domain, change the KRBTGT account password once, force replication, and then change the password a second time. Consider rotating the KRBTGT account password every 180 days."
+            }
+          ]
         ]
       },
       {
-        "id": "M1032",
-        "name": "Multi-factor Authentication",
+        "id": "M1041",
+        "name": "Encrypt Sensitive Information",
         "description": [
-          {
-            "type": "text",
-            "content": "Integrating multi-factor authentication (MFA) as part of organizational policy can greatly reduce the risk of an adversary gaining control of valid credentials that may be used for additional tactics such as initial access, lateral movement, and collecting information. MFA can also be used to restrict access to cloud resources and APIs."
-          }
-        ]
-      },
-      {
-        "id": "M1028",
-        "name": "Operating System Configuration",
-        "description": [
-          {
-            "type": "html",
-            "content": "<p>Ensure only valid password filters are registered. Filter DLLs must be present in Windows installation directory (<code>C:\\Windows\\System32\\</code> by default) of a domain controller and/or local computer with a corresponding entry in <code>HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Lsa\\Notification Packages</code>.</p>"
-          },
-          {
-            "type": "html",
-            "content": "<p>Starting in Windows 11 22H2, the <code>EnableMPRNotifications</code> policy can be disabled through Group Policy or through a configuration service provider to prevent Winlogon from sending credentials to network providers.</p>"
-          }
+          [
+            {
+              "type": "text",
+              "content": "Enable AES Kerberos encryption (or another stronger encryption algorithm), rather than RC4, where possible."
+            }
+          ]
         ]
       },
       {
         "id": "M1027",
         "name": "Password Policies",
         "description": [
-          {
-            "type": "html",
-            "content": "<p>Ensure that <code>AllowReversiblePasswordEncryption</code> property is set to disabled unless there are application requirements.</p>"
-          }
+          [
+            {
+              "type": "text",
+              "content": "Ensure strong password length (ideally 25+ characters) and complexity for service accounts and that these passwords periodically expire. Also consider using Group Managed Service Accounts or another third party product such as password vaulting."
+            }
+          ]
         ]
       },
       {
         "id": "M1026",
         "name": "Privileged Account Management",
         "description": [
-          {
-            "type": "text",
-            "content": "Audit domain and local accounts as well as their permission levels routinely to look for situations that could allow an adversary to gain wide access by obtaining credentials of a privileged account.   These audits should also include if default accounts have been enabled, or if new local accounts are created that have not be authorized. Follow best practices for design and administration of an enterprise network to limit privileged account use across administrative tiers. "
-          },
-          {
-            "type": "text",
-            "content": "Limit access to the root account and prevent users from modifying protected components through proper privilege separation (ex SELinux, grsecurity, AppArmor, etc.) and limiting Privilege Escalation opportunities."
-          },
-          {
-            "type": "text",
-            "content": "Limit on-premises accounts with access to the hybrid identity solution in place. For example, limit Azure AD Global Administrator accounts to only those required, and ensure that these are dedicated cloud-only accounts rather than hybrid ones."
-          }
-        ]
-      },
-      {
-        "id": "M1025",
-        "name": "Privileged Process Integrity",
-        "description": [
-          {
-            "type": "text",
-            "content": "Enabled features, such as Protected Process Light (PPL), for LSA."
-          }
-        ]
-      },
-      {
-        "id": "M1022",
-        "name": "Restrict File and Directory Permissions",
-        "description": [
-          {
-            "type": "html",
-            "content": "<p>Restrict write access to the <code>/Library/Security/SecurityAgentPlugins</code> directory.</p>"
-          }
-        ]
-      },
-      {
-        "id": "M1024",
-        "name": "Restrict Registry Permissions",
-        "description": [
-          {
-            "type": "html",
-            "content": "<p>Restrict Registry permissions to disallow the modification of sensitive Registry keys such as <code>HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\NetworkProvider\\Order</code>.</p>"
-          }
-        ]
-      },
-      {
-        "id": "M1018",
-        "name": "User Account Management",
-        "description": [
-          {
-            "type": "text",
-            "content": "Ensure that proper policies are implemented to dictate the the secure enrollment and deactivation of authentication mechanisms, such as MFA, for user accounts."
-          }
+          [
+            {
+              "type": "text",
+              "content": "Limit domain admin account permissions to domain controllers and limited servers. Delegate other admin functions to separate accounts."
+            }
+          ],
+          [
+            {
+              "type": "text",
+              "content": "Limit service accounts to minimal required privileges, including membership in privileged groups such as Domain Administrators."
+            }
+          ]
         ]
       }
     ]

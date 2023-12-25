@@ -6,8 +6,8 @@ from itertools import zip_longest
 from googletrans import Translator
 
 def request_html(url):
-    # print("正在请求: %s" % (url))
-    response = requests.get(url)
+    # 设置超时10s
+    response = requests.get(url, timeout=10)
     return response.text
 
 
@@ -152,7 +152,7 @@ def parse_technique_description_html(html, mitigation: bool = False):
         pass
     data["subs"] = subs
     # 4. version
-    maybes = soup.find_all("div", class_="card-body")[1].find_all("div", class_="card-data")
+    maybes = soup.find("div", class_="col-md-4").find("div", class_="card-body").find_all("div", class_="card-data")
     for maybe in maybes:
         text = maybe.text
         if "Version" in text:
@@ -251,7 +251,7 @@ def parse_sub_technique_description_html(html, mitigation: bool = False):
         tactics.append({"id": a["href"].replace("/tactics/", "").strip(), "name": a.text.strip()})
     data["tactics"] = tactics
     # 4. version
-    maybes = soup.find_all("div", class_="card-body")[1].find_all("div", class_="card-data")
+    maybes = soup.find("div", class_="col-md-4").find("div", class_="card-body").find_all("div", class_="card-data")
     for maybe in maybes:
         text = maybe.text
         if "Version" in text:
@@ -465,13 +465,13 @@ def get_sub_technique_description(sub_technique_ids: list, mitigation: bool = Fa
 
 
 if __name__ == "__main__":
-    # (tactic_ids, technique_ids, sub_technique_ids) = get_attack_framwork(translate=False, save=True)
-    # print("阶段: `%d` 个, 技术: `%d` 个, 子技术: `%d` 个" % (len(tactic_ids), len(technique_ids), len(sub_technique_ids)))
+    (tactic_ids, technique_ids, sub_technique_ids) = get_attack_framwork(translate=False, save=True)
+    print("阶段: `%d` 个, 技术: `%d` 个, 子技术: `%d` 个" % (len(tactic_ids), len(technique_ids), len(sub_technique_ids)))
     # get_tactic_description(tactic_ids, save=True, translate=True)
     
     # technique_ids = ["T1556", "T1608", "T1137", "T1547", "T1574"]
-    technique_ids = ["T1608"]
+    # technique_ids = ["T1608"]
     get_technique_description(technique_ids, mitigation=True, save=True, translate=False)
     
-    sub_technique_ids = ["T1608.001"]
-    get_sub_technique_description(sub_technique_ids, mitigation=True, save=True, translate=False)
+    # sub_technique_ids = ["T1608.001"]
+    # get_sub_technique_description(sub_technique_ids, mitigation=True, save=True, translate=False)

@@ -1,0 +1,127 @@
+[
+  {
+    "id": "T1556",
+    "description": [
+      {
+        "type": "text",
+        "content": "对手可以修改身份验证机制和流程以访问用户凭据或启用原本无理的对帐户的访问。身份验证过程由机制来处理，例如本地安全身份验证服务器（LSASS）流程和Windows上的安全帐户经理（SAM），基于UNIX的系统上的可插入身份验证模块（PAM）以及MACOS系统上的授权插件，负责任的插件用于收集，存储和验证凭据。通过修改身份验证过程，对手可以在不使用有效帐户的情况下对服务或系统进行身份验证。"
+      },
+      {
+        "type": "text",
+        "content": "对手可能会恶意修改此过程的一部分，以揭示凭证或绕过身份验证机制。受损的凭据或访问可用于绕过网络中系统上各种资源上的访问控件，甚至可以用于持续访问远程系统和外部可用服务，例如VPN，Outlook Web访问和远程桌面。"
+      }
+    ],
+    "mitigations": [
+      {
+        "id": "M1047",
+        "name": "Audit",
+        "description": [
+          {
+            "type": "text",
+            "content": "Review authentication logs to ensure that mechanisms such as enforcement of MFA are functioning as intended."
+          },
+          {
+            "type": "text",
+            "content": "Periodically review the hybrid identity solution in use for any discrepancies. For example, review all Pass Through Authentication (PTA) agents in the Azure Management Portal to identify any unwanted or unapproved ones. If ADFS is in use, review DLLs and executable files in the AD FS and Global Assembly Cache directories to ensure that they are signed by Microsoft. Note that in some cases binaries may be catalog-signed, which may cause the file to appear unsigned when viewing file properties."
+          },
+          {
+            "type": "html",
+            "content": "<p>Periodically review for new and unknown network provider DLLs within the Registry (<code>HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\&lt;NetworkProviderName&gt;\\NetworkProvider\\ProviderPath</code>). Ensure only valid network provider DLLs are registered. The name of these can be found in the Registry key at <code>HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\NetworkProvider\\Order</code>, and have corresponding service subkey pointing to a DLL at <code>HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentC ontrolSet\\Services\\&lt;NetworkProviderName&gt;\\NetworkProvider</code>.</p>"
+          }
+        ]
+      },
+      {
+        "id": "M1032",
+        "name": "Multi-factor Authentication",
+        "description": [
+          {
+            "type": "text",
+            "content": "Integrating multi-factor authentication (MFA) as part of organizational policy can greatly reduce the risk of an adversary gaining control of valid credentials that may be used for additional tactics such as initial access, lateral movement, and collecting information. MFA can also be used to restrict access to cloud resources and APIs."
+          }
+        ]
+      },
+      {
+        "id": "M1028",
+        "name": "Operating System Configuration",
+        "description": [
+          {
+            "type": "html",
+            "content": "<p>Ensure only valid password filters are registered. Filter DLLs must be present in Windows installation directory (<code>C:\\Windows\\System32\\</code> by default) of a domain controller and/or local computer with a corresponding entry in <code>HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Lsa\\Notification Packages</code>.</p>"
+          },
+          {
+            "type": "html",
+            "content": "<p>Starting in Windows 11 22H2, the <code>EnableMPRNotifications</code> policy can be disabled through Group Policy or through a configuration service provider to prevent Winlogon from sending credentials to network providers.</p>"
+          }
+        ]
+      },
+      {
+        "id": "M1027",
+        "name": "Password Policies",
+        "description": [
+          {
+            "type": "html",
+            "content": "<p>Ensure that <code>AllowReversiblePasswordEncryption</code> property is set to disabled unless there are application requirements.</p>"
+          }
+        ]
+      },
+      {
+        "id": "M1026",
+        "name": "Privileged Account Management",
+        "description": [
+          {
+            "type": "text",
+            "content": "Audit domain and local accounts as well as their permission levels routinely to look for situations that could allow an adversary to gain wide access by obtaining credentials of a privileged account.   These audits should also include if default accounts have been enabled, or if new local accounts are created that have not be authorized. Follow best practices for design and administration of an enterprise network to limit privileged account use across administrative tiers. "
+          },
+          {
+            "type": "text",
+            "content": "Limit access to the root account and prevent users from modifying protected components through proper privilege separation (ex SELinux, grsecurity, AppArmor, etc.) and limiting Privilege Escalation opportunities."
+          },
+          {
+            "type": "text",
+            "content": "Limit on-premises accounts with access to the hybrid identity solution in place. For example, limit Azure AD Global Administrator accounts to only those required, and ensure that these are dedicated cloud-only accounts rather than hybrid ones."
+          }
+        ]
+      },
+      {
+        "id": "M1025",
+        "name": "Privileged Process Integrity",
+        "description": [
+          {
+            "type": "text",
+            "content": "Enabled features, such as Protected Process Light (PPL), for LSA."
+          }
+        ]
+      },
+      {
+        "id": "M1022",
+        "name": "Restrict File and Directory Permissions",
+        "description": [
+          {
+            "type": "html",
+            "content": "<p>Restrict write access to the <code>/Library/Security/SecurityAgentPlugins</code> directory.</p>"
+          }
+        ]
+      },
+      {
+        "id": "M1024",
+        "name": "Restrict Registry Permissions",
+        "description": [
+          {
+            "type": "html",
+            "content": "<p>Restrict Registry permissions to disallow the modification of sensitive Registry keys such as <code>HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\NetworkProvider\\Order</code>.</p>"
+          }
+        ]
+      },
+      {
+        "id": "M1018",
+        "name": "User Account Management",
+        "description": [
+          {
+            "type": "text",
+            "content": "Ensure that proper policies are implemented to dictate the the secure enrollment and deactivation of authentication mechanisms, such as MFA, for user accounts."
+          }
+        ]
+      }
+    ]
+  }
+]

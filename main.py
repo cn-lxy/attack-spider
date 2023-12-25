@@ -138,8 +138,25 @@ def parse_technique_description_html(html, mitigation: bool = False):
     ps = description_body.find_all("p")
     technique_description_list = []
     for p in ps:
-        # TODO: 遍历每一段
-        technique_description_list.append([{ "type": "text", "content": re.sub(r"\[\d+\]", "", p.text) }])
+        item_list = []
+        p_content = ""
+        p_type = "" # "code" | "text"
+        for item in p:
+            if isinstance(item, str):
+                p_type = "text"
+                p_content += item
+            elif item.name == "code":
+                if p_type == "text":
+                    item_list.append({ "type": "text", "content": p_content })
+                p_type = "code"
+                p_content = ""
+                item_list.append({ "type": "code", "content": item.text })
+            else:
+                p_type = "text"
+                p_content += re.sub(r"\[\d+\]", "", item.text ).strip()
+        if p_type == "text" and p_content != "":
+            item_list.append({ "type": "text", "content": p_content })
+        technique_description_list.append(item_list)
     data["description"] = technique_description_list
 
     # 缓解措施
@@ -153,25 +170,28 @@ def parse_technique_description_html(html, mitigation: bool = False):
                 if len(tds) == 3:
                     description = []
                     for p in tds[2]:
-                        text = ""
-                        tag = False
-                        for info in p:
-                            # TODO: 将每一小段分开存，一段用一个数组表示
-                            if isinstance(info, str):
-                                text += info
-                            elif info.name == "code":
-                                text += str(info)
-                                tag = True
+                        item_list = []
+                        p_content = ""
+                        p_type = "" # "code" | "text"
+                        for item in p:
+                            if isinstance(item, str):
+                                p_type = "text"
+                                p_content += re.sub(r"\n", "", item)
+                            elif item.name == "code":
+                                if p_type == "text":
+                                    item_list.append({ "type": "text", "content": p_content })
+                                p_type = "code"
+                                p_content = ""
+                                item_list.append({ "type": "code", "content": item.text })
                             else:
-                                text += info.text
-                        text = text.strip()
-                        if text != "":
-                            text = re.sub(r"\[\d+\]", "", text)
-                            if tag:
-                                text = "<p>" + text +"</p>"
-                                description.append({ "type": "html", "content": text })
-                            else:
-                                description.append({ "type": "text", "content": text })
+                                p_type = "text"
+                                pre1 = re.sub(r"\[\d+\]", "", item.text )
+                                pre2 = re.sub(r"\n", "", pre1)
+                                p_content += pre2
+                        if p_type == "text" and p_content != "":
+                            item_list.append({ "type": "text", "content": p_content })
+                        if len(item_list):
+                            description.append(item_list)
                     mitigations.append({ 
                         "id": tds[0].text.strip(), 
                         "name": tds[1].text.strip(), 
@@ -247,7 +267,7 @@ def get_tactic_description(tactic_ids: list, save: bool = False, translate: bool
 
 
 #! 调用3: 获取technique描述
-def get_technique_description(technique_ids: list, save: bool = False, translate: bool = False):
+def get_technique_description(technique_ids: list, mitigation: bool = False, save: bool = False, translate: bool = False):
     list_len = len(technique_ids)
     print("正在抓取 `%d` 个技术" % (list_len))
     data = []
@@ -257,9 +277,11 @@ def get_technique_description(technique_ids: list, save: bool = False, translate
         console_msg = f"技术详情抓取中: {url} [{index+1:>3}/{list_len}]"
         print(console_msg, end='\r')
         technique_html = request_html(url)
-        parse_data = parse_technique_description_html(technique_html, mitigation=False)
-        # data.append({ "id": technique_id, "description": parse_data["description"], "mitigations": parse_data["mitigations"] })
-        data.append({ "id": technique_id, "description": parse_data["description"] })
+        parse_data = parse_technique_description_html(technique_html, mitigation)
+        if mitigation:
+            data.append({ "id": technique_id, "description": parse_data["description"], "mitigations": parse_data["mitigations"] })
+        else:
+            data.append({ "id": technique_id, "description": parse_data["description"] })
     print(console_msg)
     print("`%d` 个技术, 抓取完成!" % (list_len))
     if save:
@@ -298,9 +320,11 @@ def get_sub_technique_description(sub_technique_ids: list, save: bool = False, t
 
 
 if __name__ == "__main__":
-    (tactic_ids, technique_ids, sub_technique_ids) = get_attack_framwork(translate=False, save=True)
-    print("阶段: `%d` 个, 技术: `%d` 个, 子技术: `%d` 个" % (len(tactic_ids), len(technique_ids), len(sub_technique_ids)))
+    # (tactic_ids, technique_ids, sub_technique_ids) = get_attack_framwork(translate=False, save=True)
+    # print("阶段: `%d` 个, 技术: `%d` 个, 子技术: `%d` 个" % (len(tactic_ids), len(technique_ids), len(sub_technique_ids)))
     # get_tactic_description(tactic_ids, save=True, translate=True)
-    # ids = ["T1556"]
-    # get_technique_description(technique_ids, save=True, translate=True)
+    
+    # technique_ids = ["T1556", "T1608", "T1137", "T1547", "T1574"]
+    technique_ids = ["T1574"]
+    get_technique_description(technique_ids, mitigation=True, save=True, translate=False)
     # get_sub_technique_description(sub_technique_ids, save=True, translate=True)

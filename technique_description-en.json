@@ -1,221 +1,47 @@
 [
   {
-    "id": "T1574",
+    "id": "T1608",
     "description": [
       [
         {
           "type": "text",
-          "content": "Adversaries may execute their own malicious payloads by hijacking the way operating systems run programs. Hijacking execution flow can be for the purposes of persistence, since this hijacked execution may reoccur over time. Adversaries may also use these mechanisms to elevate privileges or evade defenses, such as application control or other restrictions on execution."
+          "content": "Adversaries may upload, install, or otherwise set up capabilities that can be used during targeting. To support their operations, an adversary may need to take capabilities they developed (Develop Capabilities) or obtained (Obtain Capabilities) and stage them on infrastructure under their control. These capabilities may be staged on infrastructure that was previously purchased/rented by the adversary (Acquire Infrastructure) or was otherwise compromised by them (Compromise Infrastructure). Capabilities may also be staged on web services, such as GitHub or Pastebin, or on Platform-as-a-Service (PaaS) offerings that enable users to easily provision applications."
         }
       ],
       [
         {
           "type": "text",
-          "content": "There are many ways an adversary may hijack the flow of execution, including by manipulating how the operating system locates programs to be executed. How the operating system locates libraries to be used by a program can also be intercepted. Locations where the operating system looks for programs/resources, such as file directories and in the case of Windows the Registry, could also be poisoned to include malicious payloads."
+          "content": "Staging of capabilities can aid the adversary in a number of initial access and post-compromise behaviors, including (but not limited to):"
+        }
+      ],
+      [
+        {
+          "type": "li",
+          "content": "Staging web resources necessary to conduct Drive-by Compromise when a user browses to a site."
+        },
+        {
+          "type": "li",
+          "content": "Staging web resources for a link target to be used with spearphishing."
+        },
+        {
+          "type": "li",
+          "content": "Uploading malware or tools to a location accessible to a victim network to enable Ingress Tool Transfer."
+        },
+        {
+          "type": "li",
+          "content": "Installing a previously acquired SSL/TLS certificate to use to encrypt command and control traffic (ex: Asymmetric Cryptography with Web Protocols)."
         }
       ]
     ],
     "mitigations": [
       {
-        "id": "M1013",
-        "name": "Application Developer Guidance",
+        "id": "M1056",
+        "name": "Pre-compromise",
         "description": [
           [
             {
               "type": "text",
-              "content": "When possible, include hash values in manifest files to help prevent side-loading of malicious libraries."
-            }
-          ]
-        ]
-      },
-      {
-        "id": "M1047",
-        "name": "Audit",
-        "description": [
-          [
-            {
-              "type": "text",
-              "content": "Use auditing tools capable of detecting hijacking opportunities on systems within an enterprise and correct them. Toolkits like the PowerSploit framework contain PowerUp modules that can be used to explore systems for hijacking weaknesses."
-            }
-          ],
-          [
-            {
-              "type": "text",
-              "content": "Use the program sxstrace.exe that is included with Windows along with manual inspection to check manifest files for side-loading vulnerabilities in software."
-            }
-          ],
-          [
-            {
-              "type": "text",
-              "content": "Find and eliminate path interception weaknesses in program configuration files, scripts, the PATH environment variable, services, and in shortcuts by surrounding PATH variables with quotation marks when functions allow for them. Be aware of the search order Windows uses for executing or loading binaries and use fully qualified paths wherever appropriate."
-            }
-          ],
-          [
-            {
-              "type": "text",
-              "content": "Clean up old Windows Registry keys when software is uninstalled to avoid keys with no associated legitimate binaries. Periodically search for and correct or report path interception weaknesses on systems that may have been introduced using custom or available tools that report software using insecure path configurations."
-            }
-          ]
-        ]
-      },
-      {
-        "id": "M1040",
-        "name": "Behavior Prevention on Endpoint",
-        "description": [
-          [
-            {
-              "type": "text",
-              "content": "Some endpoint security solutions can be configured to block some types of behaviors related to process injection/memory tampering based on common sequences of indicators (ex: execution of specific API functions)."
-            }
-          ]
-        ]
-      },
-      {
-        "id": "M1038",
-        "name": "Execution Prevention",
-        "description": [
-          [
-            {
-              "type": "text",
-              "content": "Adversaries may use new payloads to execute this technique. Identify and block potentially malicious software executed through hijacking by using application control solutions also capable of blocking libraries loaded by legitimate software."
-            }
-          ]
-        ]
-      },
-      {
-        "id": "M1022",
-        "name": "Restrict File and Directory Permissions",
-        "description": [
-          [
-            {
-              "type": "text",
-              "content": "Install software in write-protected locations. Set directory access controls to prevent file writes to the search paths for applications, both in the folders where applications are run from and the standard library folders."
-            }
-          ]
-        ]
-      },
-      {
-        "id": "M1044",
-        "name": "Restrict Library Loading",
-        "description": [
-          [
-            {
-              "type": "text",
-              "content": "Disallow loading of remote DLLs. This is included by default in Windows Server 2012+ and is available by patch for XP+ and Server 2003+."
-            }
-          ],
-          [
-            {
-              "type": "text",
-              "content": "Enable Safe DLL Search Mode to force search for system DLLs in directories with greater restrictions (e.g. "
-            },
-            { "type": "code", "content": "%SYSTEMROOT%" },
-            {
-              "type": "text",
-              "content": ")to be used before local directory DLLs (e.g. a user's home directory)"
-            }
-          ],
-          [
-            {
-              "type": "text",
-              "content": "The Safe DLL Search Mode can be enabled via Group Policy at Computer Configuration > [Policies] > Administrative Templates > MSS (Legacy): MSS: (SafeDllSearchMode) Enable Safe DLL search mode. The associated Windows Registry key for this is located at "
-            },
-            {
-              "type": "code",
-              "content": "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\SafeDLLSearchMode"
-            }
-          ]
-        ]
-      },
-      {
-        "id": "M1024",
-        "name": "Restrict Registry Permissions",
-        "description": [
-          [
-            {
-              "type": "text",
-              "content": "Ensure proper permissions are set for Registry hives to prevent users from modifying keys for system components that may lead to privilege escalation."
-            }
-          ]
-        ]
-      },
-      {
-        "id": "M1051",
-        "name": "Update Software",
-        "description": [
-          [
-            {
-              "type": "text",
-              "content": "Update software regularly to include patches that fix DLL side-loading vulnerabilities."
-            }
-          ]
-        ]
-      },
-      {
-        "id": "M1052",
-        "name": "User Account Control",
-        "description": [
-          [
-            {
-              "type": "text",
-              "content": "Turn off UAC's privilege elevation for standard users "
-            },
-            {
-              "type": "code",
-              "content": "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System]"
-            },
-            {
-              "type": "text",
-              "content": " to automatically deny elevation requests, add: "
-            },
-            {
-              "type": "code",
-              "content": "\"ConsentPromptBehaviorUser\"=dword:00000000"
-            },
-            {
-              "type": "text",
-              "content": ". Consider enabling installer detection for all users by adding: "
-            },
-            {
-              "type": "code",
-              "content": "\"EnableInstallerDetection\"=dword:00000001"
-            },
-            {
-              "type": "text",
-              "content": ". This will prompt for a password for installation and also log the attempt. To disable installer detection, instead add: "
-            },
-            {
-              "type": "code",
-              "content": "\"EnableInstallerDetection\"=dword:00000000"
-            },
-            {
-              "type": "text",
-              "content": ". This may prevent potential elevation of privileges through exploitation during the process of UAC detecting the installer, but will allow the installation process to continue without being logged.  "
-            }
-          ]
-        ]
-      },
-      {
-        "id": "M1018",
-        "name": "User Account Management",
-        "description": [
-          [
-            {
-              "type": "text",
-              "content": "Limit privileges of user accounts and groups so that only authorized administrators can interact with service changes and service binary target path locations. Deny execution from user directories such as file download directories and temp directories where able."
-            }
-          ],
-          [
-            {
-              "type": "text",
-              "content": "Ensure that proper permissions and directory access control are set to deny users the ability to write files to the top-level directory "
-            },
-            { "type": "code", "content": "C:" },
-            { "type": "text", "content": " and system directories, such as " },
-            { "type": "code", "content": "C:\\Windows\\" },
-            {
-              "type": "text",
-              "content": ", to reduce places where malicious files could be placed for execution."
+              "content": "This technique cannot be easily mitigated with preventive controls since it is based on behaviors performed outside of the scope of enterprise defenses and controls."
             }
           ]
         ]

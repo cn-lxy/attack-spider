@@ -135,28 +135,35 @@ def parse_technique_description_html(html, mitigation: bool = False):
     data = {}
     # 描述
     description_body = soup.find("div", class_="description-body")
-    ps = description_body.find_all("p")
+    children = description_body.children
     technique_description_list = []
-    for p in ps:
-        item_list = []
-        p_content = ""
-        p_type = "" # "code" | "text"
-        for item in p:
-            if isinstance(item, str):
-                p_type = "text"
-                p_content += item
-            elif item.name == "code":
-                if p_type == "text":
-                    item_list.append({ "type": "text", "content": p_content })
-                p_type = "code"
-                p_content = ""
-                item_list.append({ "type": "code", "content": item.text })
-            else:
-                p_type = "text"
-                p_content += re.sub(r"\[\d+\]", "", item.text ).strip()
-        if p_type == "text" and p_content != "":
-            item_list.append({ "type": "text", "content": p_content })
-        technique_description_list.append(item_list)
+    for child in children:
+        if child.name == "p":
+            item_list = []
+            p_content = ""
+            p_type = "" # "code" | "text"
+            for item in child:
+                if isinstance(item, str):
+                    p_type = "text"
+                    p_content += item
+                elif item.name == "code":
+                    if p_type == "text":
+                        item_list.append({ "type": "text", "content": p_content })
+                    p_type = "code"
+                    p_content = ""
+                    item_list.append({ "type": "code", "content": item.text })
+                else:
+                    p_type = "text"
+                    p_content += re.sub(r"\[\d+\]", "", item.text ).strip()
+            if p_type == "text" and p_content != "":
+                item_list.append({ "type": "text", "content": p_content })
+            technique_description_list.append(item_list)
+        elif child.name == "ul":
+            lis = child.find_all("li")
+            item_list = []
+            for li in lis:
+                item_list.append({ "type": "li", "content": re.sub(r"\[\d+\]", "", li.text ).strip() })
+            technique_description_list.append(item_list)
     data["description"] = technique_description_list
 
     # 缓解措施
@@ -204,7 +211,7 @@ def parse_technique_description_html(html, mitigation: bool = False):
     return data
 
 
-def parse_sub_technique_description_html(html):
+def parse_sub_technique_description_html(html, mitigation: bool = False):
     soup = BeautifulSoup(html, "html.parser")
     # 描述
     description_body = soup.find("div", class_="description-body")
@@ -294,7 +301,7 @@ def get_technique_description(technique_ids: list, mitigation: bool = False, sav
 
 
 #! 调用4: 获取sub-technique描述
-def get_sub_technique_description(sub_technique_ids: list, save: bool = False, translate: bool = False):
+def get_sub_technique_description(sub_technique_ids: list, mitigation: bool = False, save: bool = False, translate: bool = False):
     list_len = len(sub_technique_ids)
     print("正在抓取 `%d` 个子技术" % (list_len))
     data = []
@@ -320,11 +327,11 @@ def get_sub_technique_description(sub_technique_ids: list, save: bool = False, t
 
 
 if __name__ == "__main__":
-    # (tactic_ids, technique_ids, sub_technique_ids) = get_attack_framwork(translate=False, save=True)
-    # print("阶段: `%d` 个, 技术: `%d` 个, 子技术: `%d` 个" % (len(tactic_ids), len(technique_ids), len(sub_technique_ids)))
+    (tactic_ids, technique_ids, sub_technique_ids) = get_attack_framwork(translate=False, save=True)
+    print("阶段: `%d` 个, 技术: `%d` 个, 子技术: `%d` 个" % (len(tactic_ids), len(technique_ids), len(sub_technique_ids)))
     # get_tactic_description(tactic_ids, save=True, translate=True)
     
     # technique_ids = ["T1556", "T1608", "T1137", "T1547", "T1574"]
-    technique_ids = ["T1574"]
+    # technique_ids = ["T1608"]
     get_technique_description(technique_ids, mitigation=True, save=True, translate=False)
-    # get_sub_technique_description(sub_technique_ids, save=True, translate=True)
+    # get_sub_technique_description(sub_technique_ids, mitigation=True, save=True, translate=True)

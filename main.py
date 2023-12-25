@@ -133,7 +133,32 @@ def parse_tactic_description_html(html):
 def parse_technique_description_html(html, mitigation: bool = False):
     soup = BeautifulSoup(html, "html.parser")
     data = {}
-    # 描述
+    # 1. name
+    data["name"] = soup.find("div", class_="container-fluid").find("h1").text.strip()
+    # 2. 阶段 tactics
+    tactics_a = soup.find("div", id="card-tactics").find_all("a")
+    tactics = []
+    for a in tactics_a:
+        tactics.append(a.text.strip())
+    data["tactics"] = tactics
+    # 3. 子技术
+    subs = []
+    try:
+        subs_trs = soup.find("div", id="subtechniques-card-body").find("table").find("tbody").find_all("tr")
+        for tr in subs_trs:
+            tds = tr.find_all("td")
+            subs.append({ "id": tds[0].text.strip(), "name": tds[1].text.strip() })
+    except:
+        pass
+    data["subs"] = subs
+    # 4. version
+    maybes = soup.find_all("div", class_="card-body")[1].find_all("div", class_="card-data")
+    for maybe in maybes:
+        text = maybe.text
+        if "Version" in text:
+            data["version"] = text.split(":")[1].strip()
+            break
+    # 5.描述
     description_body = soup.find("div", class_="description-body")
     children = description_body.children
     technique_description_list = []
@@ -286,9 +311,24 @@ def get_technique_description(technique_ids: list, mitigation: bool = False, sav
         technique_html = request_html(url)
         parse_data = parse_technique_description_html(technique_html, mitigation)
         if mitigation:
-            data.append({ "id": technique_id, "description": parse_data["description"], "mitigations": parse_data["mitigations"] })
+            data.append({
+                "id": technique_id,
+                "name": parse_data["name"],
+                "tactics": parse_data["tactics"],
+                "subs": parse_data["subs"],
+                "version": parse_data["version"] or None,
+                "description": parse_data["description"],
+                "mitigations": parse_data["mitigations"],
+            })
         else:
-            data.append({ "id": technique_id, "description": parse_data["description"] })
+            data.append({
+                "id": technique_id,
+                "name": parse_data,
+                "tactics": parse_data["tactics"],
+                "subs": parse_data["subs"],
+                "version": parse_data["version"],
+                "description": parse_data["description"]
+            })
     print(console_msg)
     print("`%d` 个技术, 抓取完成!" % (list_len))
     if save:
@@ -327,11 +367,11 @@ def get_sub_technique_description(sub_technique_ids: list, mitigation: bool = Fa
 
 
 if __name__ == "__main__":
-    (tactic_ids, technique_ids, sub_technique_ids) = get_attack_framwork(translate=False, save=True)
-    print("阶段: `%d` 个, 技术: `%d` 个, 子技术: `%d` 个" % (len(tactic_ids), len(technique_ids), len(sub_technique_ids)))
+    # (tactic_ids, technique_ids, sub_technique_ids) = get_attack_framwork(translate=False, save=True)
+    # print("阶段: `%d` 个, 技术: `%d` 个, 子技术: `%d` 个" % (len(tactic_ids), len(technique_ids), len(sub_technique_ids)))
     # get_tactic_description(tactic_ids, save=True, translate=True)
     
     # technique_ids = ["T1556", "T1608", "T1137", "T1547", "T1574"]
-    # technique_ids = ["T1608"]
+    technique_ids = ["T1608"]
     get_technique_description(technique_ids, mitigation=True, save=True, translate=False)
     # get_sub_technique_description(sub_technique_ids, mitigation=True, save=True, translate=True)

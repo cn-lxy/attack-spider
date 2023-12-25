@@ -1,6 +1,17 @@
 [
   {
     "id": "T1608",
+    "name": "Stage Capabilities",
+    "tactics": ["Resource Development"],
+    "subs": [
+      { "id": "T1608.001", "name": "Upload Malware" },
+      { "id": "T1608.002", "name": "Upload Tool" },
+      { "id": "T1608.003", "name": "Install Digital Certificate" },
+      { "id": "T1608.004", "name": "Drive-by Target" },
+      { "id": "T1608.005", "name": "Link Target" },
+      { "id": "T1608.006", "name": "SEO Poisoning" }
+    ],
+    "version": "1.2",
     "description": [
       [
         {

@@ -182,5 +182,221 @@
         ]
       }
     ]
+  },
+  {
+    "id": "T1556",
+    "name": "Modify Authentication Process",
+    "tactics": [
+      { "id": "TA0006", "name": "Credential Access" },
+      { "id": "TA0005", "name": "Defense Evasion" },
+      { "id": "TA0003", "name": "Persistence" }
+    ],
+    "subs": [
+      { "id": "T1556.001", "name": "Domain Controller Authentication" },
+      { "id": "T1556.002", "name": "Password Filter DLL" },
+      { "id": "T1556.003", "name": "Pluggable Authentication Modules" },
+      { "id": "T1556.004", "name": "Network Device Authentication" },
+      { "id": "T1556.005", "name": "Reversible Encryption" },
+      { "id": "T1556.006", "name": "Multi-Factor Authentication" },
+      { "id": "T1556.007", "name": "Hybrid Identity" },
+      { "id": "T1556.008", "name": "Network Provider DLL" }
+    ],
+    "version": "2.3",
+    "description": [
+      [
+        {
+          "type": "text",
+          "content": "Adversaries may modify authentication mechanisms and processes to access user credentials or enable otherwise unwarranted access to accounts. The authentication process is handled by mechanisms, such as the Local Security Authentication Server (LSASS) process and the Security Accounts Manager (SAM) on Windows, pluggable authentication modules (PAM) on Unix-based systems, and authorization plugins on MacOS systems, responsible for gathering, storing, and validating credentials. By modifying an authentication process, an adversary may be able to authenticate to a service or system without using Valid Accounts."
+        }
+      ],
+      [
+        {
+          "type": "text",
+          "content": "Adversaries may maliciously modify a part of this process to either reveal credentials or bypass authentication mechanisms. Compromised credentials or access may be used to bypass access controls placed on various resources on systems within the network and may even be used for persistent access to remote systems and externally available services, such as VPNs, Outlook Web Access and remote desktop."
+        }
+      ]
+    ],
+    "mitigations": [
+      {
+        "id": "M1047",
+        "name": "Audit",
+        "description": [
+          [
+            {
+              "type": "text",
+              "content": "Review authentication logs to ensure that mechanisms such as enforcement of MFA are functioning as intended."
+            }
+          ],
+          [
+            {
+              "type": "text",
+              "content": "Periodically review the hybrid identity solution in use for any discrepancies. For example, review all Pass Through Authentication (PTA) agents in the Azure Management Portal to identify any unwanted or unapproved ones. If ADFS is in use, review DLLs and executable files in the AD FS and Global Assembly Cache directories to ensure that they are signed by Microsoft. Note that in some cases binaries may be catalog-signed, which may cause the file to appear unsigned when viewing file properties."
+            }
+          ],
+          [
+            {
+              "type": "text",
+              "content": "Periodically review for new and unknown network provider DLLs within the Registry ("
+            },
+            {
+              "type": "code",
+              "content": "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\<NetworkProviderName>\\NetworkProvider\\ProviderPath"
+            },
+            {
+              "type": "text",
+              "content": "). Ensure only valid network provider DLLs are registered. The name of these can be found in the Registry key at "
+            },
+            {
+              "type": "code",
+              "content": "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\NetworkProvider\\Order"
+            },
+            {
+              "type": "text",
+              "content": ", and have corresponding service subkey pointing to a DLL at "
+            },
+            {
+              "type": "code",
+              "content": "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentC ontrolSet\\Services\\<NetworkProviderName>\\NetworkProvider"
+            },
+            { "type": "text", "content": "." }
+          ]
+        ]
+      },
+      {
+        "id": "M1032",
+        "name": "Multi-factor Authentication",
+        "description": [
+          [
+            {
+              "type": "text",
+              "content": "Integrating multi-factor authentication (MFA) as part of organizational policy can greatly reduce the risk of an adversary gaining control of valid credentials that may be used for additional tactics such as initial access, lateral movement, and collecting information. MFA can also be used to restrict access to cloud resources and APIs. "
+            }
+          ]
+        ]
+      },
+      {
+        "id": "M1028",
+        "name": "Operating System Configuration",
+        "description": [
+          [
+            {
+              "type": "text",
+              "content": "Ensure only valid password filters are registered. Filter DLLs must be present in Windows installation directory ("
+            },
+            { "type": "code", "content": "C:\\Windows\\System32\\" },
+            {
+              "type": "text",
+              "content": " by default) of a domain controller and/or local computer with a corresponding entry in "
+            },
+            {
+              "type": "code",
+              "content": "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Lsa\\Notification Packages"
+            },
+            { "type": "text", "content": ". " }
+          ],
+          [
+            { "type": "text", "content": "Starting in Windows 11 22H2, the " },
+            { "type": "code", "content": "EnableMPRNotifications" },
+            {
+              "type": "text",
+              "content": " policy can be disabled through Group Policy or through a configuration service provider to prevent Winlogon from sending credentials to network providers."
+            }
+          ]
+        ]
+      },
+      {
+        "id": "M1027",
+        "name": "Password Policies",
+        "description": [
+          [
+            { "type": "text", "content": "Ensure that " },
+            { "type": "code", "content": "AllowReversiblePasswordEncryption" },
+            {
+              "type": "text",
+              "content": " property is set to disabled unless there are application requirements."
+            }
+          ]
+        ]
+      },
+      {
+        "id": "M1026",
+        "name": "Privileged Account Management",
+        "description": [
+          [
+            {
+              "type": "text",
+              "content": "Audit domain and local accounts as well as their permission levels routinely to look for situations that could allow an adversary to gain wide access by obtaining credentials of a privileged account.   These audits should also include if default accounts have been enabled, or if new local accounts are created that have not be authorized. Follow best practices for design and administration of an enterprise network to limit privileged account use across administrative tiers. "
+            }
+          ],
+          [
+            {
+              "type": "text",
+              "content": "Limit access to the root account and prevent users from modifying protected components through proper privilege separation (ex SELinux, grsecurity, AppArmor, etc.) and limiting Privilege Escalation opportunities."
+            }
+          ],
+          [
+            {
+              "type": "text",
+              "content": "Limit on-premises accounts with access to the hybrid identity solution in place. For example, limit Azure AD Global Administrator accounts to only those required, and ensure that these are dedicated cloud-only accounts rather than hybrid ones."
+            }
+          ]
+        ]
+      },
+      {
+        "id": "M1025",
+        "name": "Privileged Process Integrity",
+        "description": [
+          [
+            {
+              "type": "text",
+              "content": "Enabled features, such as Protected Process Light (PPL), for LSA."
+            }
+          ]
+        ]
+      },
+      {
+        "id": "M1022",
+        "name": "Restrict File and Directory Permissions",
+        "description": [
+          [
+            { "type": "text", "content": "Restrict write access to the " },
+            {
+              "type": "code",
+              "content": "/Library/Security/SecurityAgentPlugins"
+            },
+            { "type": "text", "content": " directory." }
+          ]
+        ]
+      },
+      {
+        "id": "M1024",
+        "name": "Restrict Registry Permissions",
+        "description": [
+          [
+            {
+              "type": "text",
+              "content": "Restrict Registry permissions to disallow the modification of sensitive Registry keys such as "
+            },
+            {
+              "type": "code",
+              "content": "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\NetworkProvider\\Order"
+            },
+            { "type": "text", "content": "." }
+          ]
+        ]
+      },
+      {
+        "id": "M1018",
+        "name": "User Account Management",
+        "description": [
+          [
+            {
+              "type": "text",
+              "content": "Ensure that proper policies are implemented to dictate the the secure enrollment and deactivation of authentication mechanisms, such as MFA, for user accounts."
+            }
+          ]
+        ]
+      }
+    ]
   }
 ]

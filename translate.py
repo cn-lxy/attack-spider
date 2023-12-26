@@ -94,14 +94,37 @@ def translate_mitigation(techniques):
     翻译 mitigation
     """
     # 翻译 mitigation
-    translate_mitigation = []
     for technique in techniques:
-        for mitigation in technique["mitigation"]:
+        for mitigation in technique["mitigations"]:
             translate_name = baidu_fanyi(mitigation["name"])
+            translate_desc = []
             for desc in mitigation["description"]:
+                para = ""
                 for item in desc:
-                    # TODO: 拼接成一段在翻译再拆分
-                    pass    
+                    if item["type"] == "text":
+                        para += item["content"]
+                    elif item["type"] == "code":
+                        para += "<code>" + item["content"] + "</code>"
+                # translate_para = translator.translate(para, dest='zh-CN').text
+                translate_para = baidu_fanyi(para)
+                # 将translate_para根据符合正则表达式进行分割
+                translate_para = re.split(r"(<code>.*?</code>)", translate_para)
+                # 重新保存
+                temp = []
+                for item in translate_para:
+                    # 判断item字符串是否符合正则表达式
+                    if re.match(r"<code>.*?</code>", item):
+                        temp.append({"type": "code", "content": item.replace("<code>", "").replace("</code>", "")})
+                    else:
+                        temp.append({"type": "text", "content": item})
+                translate_desc.append(temp)   
+            mitigation["name"] = translate_name
+            mitigation["description"] = translate_desc
+    
+    # 将techniques保存为 `technique_description-zh.json`
+    with open("technique_description-zh.json", "w", encoding="utf-8") as f:
+        json.dump(techniques, f, ensure_ascii=False, indent=4)
+    print("technique_description-zh.json 保存成功")
 
 if __name__ == "__main__":
     # 读取 `technique_description-en.json`
@@ -109,3 +132,4 @@ if __name__ == "__main__":
         techniques = json.load(f)
         # 翻译
         translate_description(techniques)
+        translate_mitigation(techniques)

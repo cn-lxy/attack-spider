@@ -70,12 +70,12 @@
     "mitigations": [
       {
         "id": "M1056",
-        "name": "Pre-compromise",
+        "name": "妥协前",
         "description": [
           [
             {
               "type": "text",
-              "content": "This technique cannot be easily mitigated with preventive controls since it is based on behaviors performed outside of the scope of enterprise defenses and controls."
+              "content": "这种技术无法通过预防性控制轻易缓解，因为它是基于在企业防御和控制范围之外执行的行为。"
             }
           ]
         ]
@@ -211,54 +211,325 @@
     "mitigations": [
       {
         "id": "M1015",
-        "name": "Active Directory Configuration",
+        "name": "Active Directory配置",
         "description": [
           [
             {
               "type": "text",
-              "content": "For containing the impact of a previously generated golden ticket, reset the built-in KRBTGT account password twice, which will invalidate any existing golden tickets that have been created with the KRBTGT hash and other Kerberos tickets derived from it. For each domain, change the KRBTGT account password once, force replication, and then change the password a second time. Consider rotating the KRBTGT account password every 180 days."
+              "content": "为了包含以前生成的黄金票证的影响，请重置内置的KRBTGT帐户密码两次，这将使使用KRBTGT哈希创建的任何现有黄金票证和从中派生的其他Kerberos票证无效。对于每个域，请更改一次KRBTGT帐户密码，强制复制，然后第二次更改密码。考虑每180天轮换一次KRBTGT帐户密码。"
             }
           ]
         ]
       },
       {
         "id": "M1041",
-        "name": "Encrypt Sensitive Information",
+        "name": "加密敏感信息",
         "description": [
           [
             {
               "type": "text",
-              "content": "Enable AES Kerberos encryption (or another stronger encryption algorithm), rather than RC4, where possible."
+              "content": "尽可能启用AES Kerberos加密（或其他更强的加密算法），而不是RC4。"
             }
           ]
         ]
       },
       {
         "id": "M1027",
-        "name": "Password Policies",
+        "name": "密码策略",
         "description": [
           [
             {
               "type": "text",
-              "content": "Ensure strong password length (ideally 25+ characters) and complexity for service accounts and that these passwords periodically expire. Also consider using Group Managed Service Accounts or another third party product such as password vaulting."
+              "content": "确保服务帐户的密码长度（最好超过25个字符）和复杂性很强，并且这些密码会定期过期。还可以考虑使用集团托管服务帐户或其他第三方产品，如密码保险存储。"
             }
           ]
         ]
       },
       {
         "id": "M1026",
-        "name": "Privileged Account Management",
+        "name": "特权帐户管理",
         "description": [
           [
             {
               "type": "text",
-              "content": "Limit domain admin account permissions to domain controllers and limited servers. Delegate other admin functions to separate accounts."
+              "content": "将域管理员帐户权限限制为域控制器和有限的服务器。将其他管理功能委托给单独的帐户。"
             }
           ],
           [
             {
               "type": "text",
-              "content": "Limit service accounts to minimal required privileges, including membership in privileged groups such as Domain Administrators."
+              "content": "将服务帐户限制为所需的最低权限，包括域管理员等特权组的成员资格。"
+            }
+          ]
+        ]
+      }
+    ]
+  },
+  {
+    "id": "T1556",
+    "name": "Modify Authentication Process",
+    "tactics": [
+      {
+        "id": "TA0006",
+        "name": "Credential Access"
+      },
+      {
+        "id": "TA0005",
+        "name": "Defense Evasion"
+      },
+      {
+        "id": "TA0003",
+        "name": "Persistence"
+      }
+    ],
+    "subs": [
+      {
+        "id": "T1556.001",
+        "name": "Domain Controller Authentication"
+      },
+      {
+        "id": "T1556.002",
+        "name": "Password Filter DLL"
+      },
+      {
+        "id": "T1556.003",
+        "name": "Pluggable Authentication Modules"
+      },
+      {
+        "id": "T1556.004",
+        "name": "Network Device Authentication"
+      },
+      {
+        "id": "T1556.005",
+        "name": "Reversible Encryption"
+      },
+      {
+        "id": "T1556.006",
+        "name": "Multi-Factor Authentication"
+      },
+      {
+        "id": "T1556.007",
+        "name": "Hybrid Identity"
+      },
+      {
+        "id": "T1556.008",
+        "name": "Network Provider DLL"
+      }
+    ],
+    "version": "2.3",
+    "description": [
+      [
+        {
+          "type": "text",
+          "content": "对手可能会修改身份验证机制和过程以访问用户凭据，或以其他方式对帐户进行不必要的访问。身份验证过程由一些机制处理，如Windows上的本地安全身份验证服务器（LSASS）过程和安全帐户管理器（SAM），基于Unix的系统上的可插入身份验证模块（PAM），以及MacOS系统上负责收集、存储和验证凭据的授权插件。通过修改身份验证过程，对手可以在不使用有效帐户的情况下对服务或系统进行身份验证。"
+        }
+      ],
+      [
+        {
+          "type": "text",
+          "content": "对手可能会恶意修改此过程的一部分，以显示凭据或绕过身份验证机制。泄露的凭证或访问可用于绕过网络内系统上各种资源上的访问控制，甚至可用于持久访问远程系统和外部可用服务，如VPN、Outlook Web access和远程桌面。"
+        }
+      ]
+    ],
+    "mitigations": [
+      {
+        "id": "M1047",
+        "name": "审计",
+        "description": [
+          [
+            {
+              "type": "text",
+              "content": "审查身份验证日志，以确保MFA强制执行等机制按预期运行。"
+            }
+          ],
+          [
+            {
+              "type": "text",
+              "content": "定期检查正在使用的混合身份解决方案是否存在任何差异。例如，查看Azure管理门户中的所有直通身份验证（PTA）代理，以识别任何不需要或未批准的代理。如果正在使用ADFS，请检查AD FS和全局程序集缓存目录中的DLL和可执行文件，以确保它们由Microsoft签名。请注意，在某些情况下，二进制文件可能是经过目录签名的，这可能会导致在查看文件属性时文件显示为未签名。"
+            }
+          ],
+          [
+            {
+              "type": "text",
+              "content": "定期检查注册表中新的和未知的网络提供程序DLL（"
+            },
+            {
+              "type": "code",
+              "content": "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\<NetworkProviderName>\\NetworkProvider\\ProviderPath"
+            },
+            {
+              "type": "text",
+              "content": "）。请确保仅注册了有效的网络提供程序DLL。这些服务的名称可以在注册表项的"
+            },
+            {
+              "type": "code",
+              "content": "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\NetworkProvider\\Order中找到，并且相应的服务子项指向HKEY_LOCAL_MACHINE\\SSYSTEM\\CurrentC ontrolSet\\Services\\<NetworkProviderName>\\NetworkProvider"
+            },
+            {
+              "type": "text",
+              "content": "中的DLL。"
+            }
+          ]
+        ]
+      },
+      {
+        "id": "M1032",
+        "name": "多因素身份验证",
+        "description": [
+          [
+            {
+              "type": "text",
+              "content": "将多因素身份验证（MFA）作为组织策略的一部分进行集成，可以大大降低对手获得有效证书控制权的风险，这些证书可用于其他策略，如初始访问、横向移动和收集信息。MFA还可以用于限制对云资源和API的访问。"
+            }
+          ]
+        ]
+      },
+      {
+        "id": "M1028",
+        "name": "操作系统配置",
+        "description": [
+          [
+            {
+              "type": "text",
+              "content": "确保只注册了有效的密码筛选器。筛选器DLL必须存在于域控制器和/或本地计算机的Windows安装目录（默认情况下为"
+            },
+            {
+              "type": "code",
+              "content": "C:\\Windows\\System32\\"
+            },
+            {
+              "type": "text",
+              "content": "）中，并在"
+            },
+            {
+              "type": "code",
+              "content": "HKEY_local_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Lsa\\Notification Packages"
+            },
+            {
+              "type": "text",
+              "content": "中具有相应的条目。"
+            }
+          ],
+          [
+            {
+              "type": "text",
+              "content": "从Windows 11 22H2开始，可以通过组策略或配置服务提供商禁用"
+            },
+            {
+              "type": "code",
+              "content": "EnableMPRNotifications"
+            },
+            {
+              "type": "text",
+              "content": "策略，以阻止Winlogon向网络提供商发送凭据。"
+            }
+          ]
+        ]
+      },
+      {
+        "id": "M1027",
+        "name": "密码策略",
+        "description": [
+          [
+            {
+              "type": "text",
+              "content": "确保"
+            },
+            {
+              "type": "code",
+              "content": "AllowReversiblePasswordEncryption"
+            },
+            {
+              "type": "text",
+              "content": "属性设置为禁用，除非有应用程序要求。"
+            }
+          ]
+        ]
+      },
+      {
+        "id": "M1026",
+        "name": "特权帐户管理",
+        "description": [
+          [
+            {
+              "type": "text",
+              "content": "定期审核域和本地帐户及其权限级别，以寻找可能允许对手通过获取特权帐户的凭据获得广泛访问权限的情况。这些审计还应包括是否已启用默认帐户，或者是否创建了未经授权的新本地帐户。遵循企业网络设计和管理的最佳实践，以限制跨管理层的特权帐户使用。"
+            }
+          ],
+          [
+            {
+              "type": "text",
+              "content": "通过适当的权限分离（例如SELinux、grsecurity、AppArmor等）和限制权限提升机会，限制对根帐户的访问，防止用户修改受保护的组件。"
+            }
+          ],
+          [
+            {
+              "type": "text",
+              "content": "限制可访问混合身份解决方案的本地帐户。例如，将Azure AD Global Administrator帐户限制为仅需要的帐户，并确保这些帐户是专用的纯云帐户，而不是混合帐户。"
+            }
+          ]
+        ]
+      },
+      {
+        "id": "M1025",
+        "name": "特权流程完整性",
+        "description": [
+          [
+            {
+              "type": "text",
+              "content": "已启用LSA的功能，如受保护的过程灯（PPL）。"
+            }
+          ]
+        ]
+      },
+      {
+        "id": "M1022",
+        "name": "限制文件和目录权限",
+        "description": [
+          [
+            {
+              "type": "text",
+              "content": "限制对"
+            },
+            {
+              "type": "code",
+              "content": "/Library/Security/SecurityAgentPlugins"
+            },
+            {
+              "type": "text",
+              "content": "目录的写入访问。"
+            }
+          ]
+        ]
+      },
+      {
+        "id": "M1024",
+        "name": "限制注册表权限",
+        "description": [
+          [
+            {
+              "type": "text",
+              "content": "限制注册表权限以禁止修改敏感注册表项，如"
+            },
+            {
+              "type": "code",
+              "content": "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\NetworkProvider\\Order"
+            },
+            {
+              "type": "text",
+              "content": "。"
+            }
+          ]
+        ]
+      },
+      {
+        "id": "M1018",
+        "name": "用户帐户管理",
+        "description": [
+          [
+            {
+              "type": "text",
+              "content": "确保实施适当的策略，以规定用户帐户的身份验证机制（如MFA）的安全注册和停用。"
             }
           ]
         ]

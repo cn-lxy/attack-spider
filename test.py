@@ -1,6 +1,11 @@
-from time import sleep
+from translate import Translator
 
+translator = Translator()
 
-for i in range(1, 10):
-    print(i, end="\r")
-    sleep(1)
+src = '''
+secretsdump.py
+'''
+
+dst = translator.translate(src, dest='zh-CN').text
+
+print(dst)

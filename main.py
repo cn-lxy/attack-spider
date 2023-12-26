@@ -471,6 +471,7 @@ if __name__ == "__main__":
     
     # technique_ids = ["T1556", "T1608", "T1137", "T1547", "T1574"]
     # technique_ids = ["T1608", "T1558", "T1556"]
+    # T1189: ol类型
     get_technique_description(technique_ids, mitigation=True, save=True, translate=False)
     
     # sub_technique_ids = ["T1608.001"]
